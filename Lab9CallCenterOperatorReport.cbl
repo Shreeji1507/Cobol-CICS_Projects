@@ -1,6 +1,6 @@
        identification division.
-       program-id. Lab9CallCenterOperatorReport.
-       author. Gregory Oakes, Shreeji Patel.
+       program-id. CallCenterOperatorReport.
+       author. Shreeji Patel.
        Date-Written. 21-Apr-2018.
       *Purpose : This file is created for the lab 9 in MAFD-4202.
       *Description : This program uses arrays to store and use the
@@ -257,4 +257,4 @@
 
        
 
-       end program Lab9CallCenterOperatorReport.
+       end program CallCenterOperatorReport.
