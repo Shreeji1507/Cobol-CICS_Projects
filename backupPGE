@@ -1,0 +1,322 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. DCIA8PGE.
+       AUTHOR. ANDREW MAYNE, SHREEJI PATEL.
+
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+
+
+       COPY 'STUACCT'.
+
+       LINKAGE SECTION.
+
+       01 DFHCOMMAREA PIC X(312).
+
+       PROCEDURE DIVISION.
+
+
+           MOVE DFHCOMMAREA TO WS-COMMAREA.
+
+      *    MOVE SPACES TO WS-CRS-1.
+           MOVE 0 TO WS-VALID-COURSES.
+           MOVE 0 TO WS-STU-FIELD.
+
+           MOVE 0 TO WS-ALPHAS.
+
+           IF (WS-STU-NUMBER = 'XXXXXXX')
+                MOVE 12 TO WS-STU-FIELD
+                GO TO 100-RETURN
+           END-IF.
+
+
+           IF (WS-STU-NUMBER-LEN = 0)
+                MOVE 'YOU MUST ENTER STUDENT NUMBER' TO WS-STU-ERRORS
+                MOVE 1 TO WS-STU-FIELD
+                GO TO 100-RETURN
+           END-IF.
+
+
+           IF (WS-STU-NUMBER-LEN > 0 AND WS-STU-NUMBER-LEN < 7)
+                MOVE 'STUDENT NUMBER MUST BE 7-DIGIT LONG NUMBER'
+                TO WS-STU-ERRORS
+                MOVE 1 TO WS-STU-FIELD
+                GO TO 100-RETURN
+           END-IF.
+
+
+           IF (WS-STU-NUMBER IS NOT NUMERIC)
+                MOVE 'STUDENT NUMBER MUST BE NUMERIC' TO WS-STU-ERRORS
+                MOVE 1 TO WS-STU-FIELD
+                GO TO 100-RETURN
+           END-IF.
+
+           IF (WS-STU-NAME-LEN = 0)
+                MOVE 'STUDENT NAME IS REQUIRED' TO WS-STU-ERRORS
+                MOVE 2 TO WS-STU-FIELD
+                GO TO 100-RETURN
+           END-IF.
+
+           IF (WS-STU-NAME = SPACES)
+                MOVE 'INVALID STUDENT NAME' TO WS-STU-ERRORS
+                MOVE 2 TO WS-STU-FIELD
+                GO TO 100-RETURN
+           END-IF.
+
+           IF (WS-STU-NAME-LEN < 4)
+                MOVE 'STUDENT NAME MUST BE ATLEAST 4 CHARACTERS LONG'
+                TO WS-STU-ERRORS
+                MOVE 2 TO WS-STU-FIELD
+                GO TO 100-RETURN
+           ELSE
+                PERFORM VARYING WS-NAME-STR FROM 1 BY 1 UNTIL
+                    WS-NAME-STR > WS-STU-NAME-LEN
+
+                    MOVE STU-LETTER(WS-NAME-STR)
+                        TO WS-DETAILS(WS-NAME-STR)
+
+                    IF (STU-LETTER(WS-NAME-STR) IS ALPHABETIC AND
+                        STU-LETTER(WS-NAME-STR) IS NOT EQUAL TO SPACES)
+                        ADD 1 TO WS-ALPHAS
+                    END-IF
+                END-PERFORM
+
+                IF (WS-DETAILS(1) IS NOT ALPHABETIC-UPPER OR
+                    WS-DETAILS(1) = SPACES)
+                    MOVE 'FIRST CHARACTER OF NAME MUST BE UPPER-CASE'
+                        TO WS-STU-ERRORS
+                    MOVE 2 TO WS-STU-FIELD
+                    GO TO 100-RETURN
+                END-IF
+
+                IF (WS-ALPHAS < 4)
+                    MOVE
+                    "NAME MUST HAVE AT LEAST 4 ALPHABETIC CHARACTERS"
+                    TO WS-STU-ERRORS
+                    MOVE 2 TO WS-STU-FIELD
+                    GO TO 100-RETURN
+                END-IF
+           END-IF.
+
+
+           IF (WS-STU-COURSE-1-LEN > 0)
+      *         MOVE WS-STU-COURSE-1 TO WS-STU-COURSE-1
+                IF (NOT(VALID-1-A AND VALID-1-B AND VALID-1-C AND
+                     VALID-1-D
+                     AND WS-STU-COURSE-1(5:4) IS NUMERIC))
+
+                     MOVE
+                     'THE FIRST COURSE CODE IS NOT IN XXXX9999 FORMAT'
+                      TO WS-STU-ERRORS
+                      MOVE 3 TO WS-STU-FIELD
+                      GO TO 100-RETURN
+                ELSE
+                    IF (VALID-1-A AND VALID-1-B AND VALID-1-C AND
+                     VALID-1-D AND WS-STU-COURSE-1(5:4) IS NUMERIC)
+                        MOVE WS-STU-COURSE-1 TO WS-CRS-DETAILS(1)
+                        ADD 1 TO WS-VALID-COURSES
+                    END-IF
+                END-IF
+           ELSE
+                ADD 1 TO WS-EMPTY-COURSES
+           END-IF.
+
+           IF (WS-STU-COURSE-2-LEN > 0)
+      *         MOVE WS-STU-COURSE-2 TO WS-STU-COURSE-2
+                IF (NOT(VALID-2-A AND VALID-2-B AND VALID-2-C AND
+                     VALID-2-D
+                     AND WS-STU-COURSE-2(5:4) IS NUMERIC))
+                     MOVE
+                     'THE SECOND COURSE CODE IS NOT IN XXXX9999 FORMAT'
+                      TO WS-STU-ERRORS
+                      MOVE 4 TO WS-STU-FIELD
+                      GO TO 100-RETURN
+
+                ELSE
+                    IF (VALID-2-A AND VALID-2-B AND VALID-2-C AND
+                     VALID-2-D AND WS-STU-COURSE-2(5:4) IS NUMERIC)
+                        MOVE WS-STU-COURSE-2 TO WS-CRS-DETAILS(2)
+                        ADD 1 TO WS-VALID-COURSES
+                    END-IF
+                END-IF
+           ELSE
+                ADD 1 TO WS-EMPTY-COURSES
+           END-IF.
+
+           IF (WS-STU-COURSE-3-LEN > 0)
+      *         MOVE WS-STU-COURSE-3 TO WS-STU-COURSE-3
+                IF (NOT(VALID-3-A AND VALID-3-B AND VALID-3-C AND
+                     VALID-3-D
+                     AND WS-STU-COURSE-3(5:4) IS NUMERIC))
+
+                     MOVE
+                     'THE THIRD COURSE CODE IS NOT IN XXXX9999 FORMAT'
+                     TO WS-STU-ERRORS
+                     MOVE 5 TO WS-STU-FIELD
+                     GO TO 100-RETURN
+                ELSE
+                    IF (VALID-3-A AND VALID-3-B AND VALID-3-C AND
+                     VALID-3-D AND WS-STU-COURSE-3(5:4) IS NUMERIC)
+                        MOVE WS-STU-COURSE-3 TO WS-CRS-DETAILS(3)
+                        ADD 1 TO WS-VALID-COURSES
+                    END-IF
+                END-IF
+           ELSE
+                ADD 1 TO WS-EMPTY-COURSES
+           END-IF.
+
+           IF (WS-STU-COURSE-4-LEN > 0)
+      *         MOVE WS-STU-COURSE-4 TO WS-STU-COURSE-4
+                IF (NOT(VALID-4-A AND VALID-4-B AND VALID-4-C AND
+                     VALID-4-D
+                     AND WS-STU-COURSE-4(5:4) IS NUMERIC))
+                     MOVE
+                     'THE FORTH COURSE CODE IS NOT IN XXXX9999 FORMAT'
+                     TO WS-STU-ERRORS
+                     MOVE 6 TO WS-STU-FIELD
+                     GO TO 100-RETURN
+                ELSE
+                    IF (VALID-4-A AND VALID-4-B AND VALID-4-C AND
+                     VALID-4-D AND WS-STU-COURSE-4(5:4) IS NUMERIC)
+                        MOVE WS-STU-COURSE-4 TO WS-CRS-DETAILS(4)
+                        ADD 1 TO WS-VALID-COURSES
+                    END-IF
+                END-IF
+           ELSE
+                ADD 1 TO WS-EMPTY-COURSES
+           END-IF.
+
+           IF (WS-STU-COURSE-5-LEN > 0)
+      *         MOVE WS-STU-COURSE-5 TO WS-STU-COURSE-5
+                IF (NOT(VALID-5-A AND VALID-5-B AND VALID-5-C AND
+                     VALID-5-D
+                     AND WS-STU-COURSE-5(5:4) IS NUMERIC))
+                     MOVE
+                     'THE FIFTH COURSE CODE IS NOT IN XXXX9999 FORMAT'
+                     TO WS-STU-ERRORS
+                     MOVE 7 TO WS-STU-FIELD
+                     GO TO 100-RETURN
+                ELSE
+                    IF (VALID-5-A AND VALID-5-B AND VALID-5-C AND
+                     VALID-5-D AND WS-STU-COURSE-5(5:4) IS NUMERIC)
+                        MOVE WS-STU-COURSE-5 TO WS-CRS-DETAILS(5)
+                        ADD 1 TO WS-VALID-COURSES
+                    END-IF
+                END-IF
+           ELSE
+                ADD 1 TO WS-EMPTY-COURSES
+           END-IF.
+
+           IF (WS-EMPTY-COURSES = 5)
+                MOVE 'AT LEAST 1 COURSE CODE(XXXX9999) IS REQUIRED'
+                TO WS-STU-ERRORS
+                MOVE 3 TO WS-STU-FIELD
+                GO TO 100-RETURN
+           END-IF.
+
+           IF (WS-VALID-COURSES > 1)
+
+      *         MOVE LOW-VALUES TO WS-STU-FIELD
+                PERFORM VARYING WS-COURSE-STR FROM 1 BY 1
+                    UNTIL WS-COURSE-STR > 5
+
+                    COMPUTE WS-COURSE-STR-1 = WS-COURSE-STR + 1
+                    PERFORM VARYING WS-COURSE-STR-1 FROM WS-COURSE-STR-1
+                    BY 1 UNTIL WS-COURSE-STR-1 > 5
+
+                        PERFORM 400-DUP-COURSES
+                    END-PERFORM
+                END-PERFORM
+
+           END-IF.
+
+           IF (WS-STU-ADDRESS-1-LEN = 0 OR WS-STU-ADDRESS-1 = SPACES)
+                MOVE 'ADDRESS LINE 1 MUST NOT BE EMPTY OR SPACES'
+                TO WS-STU-ERRORS
+                MOVE 8 TO WS-STU-FIELD
+                GO TO 100-RETURN
+           END-IF.
+
+           IF (WS-STU-ADDRESS-2-LEN = 0 OR WS-STU-ADDRESS-2 = SPACES)
+                MOVE 'ADDRESS LINE 2 MUST NOT BE EMPTY OR SPACES' TO
+                WS-STU-ERRORS
+                MOVE 9 TO WS-STU-FIELD
+                GO TO 100-RETURN
+           END-IF.
+
+           IF (WS-STU-POSTAL-1-LEN = 0 AND WS-STU-POSTAL-2-LEN = 0)
+                MOVE 'YOU MUST ENTER POSTAL CODE' TO WS-STU-ERRORS
+                MOVE 10 TO WS-STU-FIELD
+                GO TO 100-RETURN
+           END-IF.
+
+      * THIS LOGIC TREATS SPACES AND ALPHABETICS EQUALLY,
+      * SPACE9SPACE 9SPACE9 IS VALID POSTAL CODE, 88'S ARE THE TEMP
+      * SOLUTION FOR THIS, TO BE IMPLEMENTED IN MAFD6202
+           IF (NOT(WS-STU-POSTAL-1(1:1) IS ALPHABETIC
+                AND WS-STU-POSTAL-1(2:1) IS
+                   NUMERIC AND WS-STU-POSTAL-1(3:1) IS ALPHABETIC AND
+                   WS-STU-POSTAL-2(1:1) IS NUMERIC
+                   AND WS-STU-POSTAL-2(2:1) IS
+                   ALPHABETIC AND WS-STU-POSTAL-2(3:1) IS NUMERIC)
+                   OR WS-STU-POSTAL-1(1:1) = SPACES
+                   OR WS-STU-POSTAL-1(3:1) = SPACES
+                   OR WS-STU-POSTAL-2(2:1) = SPACES)
+                MOVE 'POSTAL CODE MUST BE IN X9X 9X9 FORMAT'
+                TO WS-STU-ERRORS
+                MOVE 10 TO WS-STU-FIELD
+                GO TO 100-RETURN
+           END-IF.
+
+           IF (WS-STU-PHONE-1-LEN = 0 AND WS-STU-PHONE-2-LEN = 0
+               AND WS-STU-PHONE-3-LEN = 0)
+                MOVE 'YOU MUST ENTER THE PHONE NUMBER' TO WS-STU-ERRORS
+                MOVE 11 TO WS-STU-FIELD
+                GO TO 100-RETURN
+           END-IF.
+
+           IF NOT(WS-STU-PHONE-1-LEN = 3 AND WS-STU-PHONE-2-LEN = 3
+                  AND WS-STU-PHONE-3-LEN = 4)
+                MOVE 'PHONE NUMBER MUST BE 10 DIGIT LONG NUMBER' TO
+                WS-STU-ERRORS
+                MOVE 11 TO WS-STU-FIELD
+                GO TO 100-RETURN
+           END-IF.
+
+           IF (WS-STU-PHONE-1 IS NOT NUMERIC AND WS-STU-PHONE-2 IS NOT
+               NUMERIC AND WS-STU-PHONE-3 IS NOT NUMERIC)
+                MOVE 'INVALID PHONE NUMBER, MUST BE NUMERIC!!'
+                TO WS-STU-ERRORS
+                MOVE 11 TO WS-STU-FIELD
+                GO TO 100-RETURN
+           END-IF.
+
+           MOVE 0 TO WS-STU-FIELD.
+
+           GO TO 100-RETURN.
+
+       100-RETURN.
+
+           MOVE WS-COMMAREA TO DFHCOMMAREA.
+
+           EXEC CICS RETURN
+
+           END-EXEC.
+
+       400-DUP-COURSES.
+           IF(NOT(WS-CRS-DETAILS(WS-COURSE-STR)= LOW-VALUES OR
+                  WS-CRS-DETAILS(WS-COURSE-STR)= SPACES))
+
+                  IF (WS-CRS-DETAILS(WS-COURSE-STR-1) =
+                      WS-CRS-DETAILS(WS-COURSE-STR))
+                      MOVE 'DUPLICATE COURSE CODES ARE NOT ALLOWED'
+                        TO WS-STU-ERRORS
+      * course in table is offset from map by 2 hence add 2 to course
+                      ADD WS-COURSE-STR TO 2 GIVING WS-STU-FIELD
+                      GO TO 100-RETURN
+                 END-IF
+           END-IF.
+
+       END PROGRAM DCIA8PGE.
+
