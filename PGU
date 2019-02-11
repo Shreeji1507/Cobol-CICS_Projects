@@ -1,0 +1,225 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. DCIA8PGU.
+       AUTHOR. ANDREW MAYNE.
+
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+
+      * COPY INQUIRY MAP LAYOUT
+       COPY 'DCIA8MC'.
+
+      * COPY ACCTFILE RECORD LAYOUT
+       COPY 'STUREC'.
+
+      * VARIABLES FOR PASSING DATA BETWEEN RUNS OF THIS PROGRAM
+       01 WS-SAVE-DATA.
+           05 WS-MODE         PIC X
+                VALUE 'I'.
+           05 WS-STU-NAME    PIC X(20).
+
+
+       01 WS-SAVE-DATA-LEN   PIC S9(4) COMP
+           VALUE 21.
+
+      * THE BELOW FILLER VARIABLE MUST BE PRESENT BETWEEN DFHBMSCA
+      * AND ALL OTHER VARIABLES
+       01 FILLER             PIC X(1024)
+           VALUE SPACES.
+
+       COPY DFHBMSCA.
+
+       LINKAGE SECTION.
+
+       01 DFHCOMMAREA PIC X(21).
+
+       PROCEDURE DIVISION.
+
+       000-START-LOGIC.
+
+           IF (EIBCALEN = 1) THEN
+                GO TO 100-FIRST-TIME
+           END-IF.
+
+      * UPON UNSUCCESSFUL MAP RECEIVE, ASSUME THIS IS THE INITIAL RUN
+      * TODO: ADD CONDITION FOR RECORD NOT FOUND IN STUFILE
+           EXEC CICS HANDLE CONDITION
+                MAPFAIL(100-FIRST-TIME)
+                NOTFND(300-NOTFND)
+           END-EXEC.
+
+           EXEC CICS HANDLE AID
+                PF4(100-FIRST-TIME)
+                PF9(999-EXIT)
+           END-EXEC.
+
+      * ATTEMPT TO RECEIVE MAP FROM TERMINAL
+           EXEC CICS RECEIVE
+                MAP('MAP1')
+                MAPSET('DCIA8MC')
+           END-EXEC.
+
+      * RECEIVE WAS SUCCESSFUL, PROCEED WITH MAIN PROCESSING
+           GO TO 200-MAIN-LOGIC.
+
+       100-FIRST-TIME.
+
+           PERFORM 410-PREP-INQUIRY-MAP.
+
+           EXEC CICS SEND
+               MAP('MAP1')
+               MAPSET('DCIA8MC')
+               ERASE
+           END-EXEC.
+
+           EXEC CICS RETURN
+               TRANSID('IA83')
+               COMMAREA(WS-SAVE-DATA)
+               LENGTH(WS-SAVE-DATA-LEN)
+           END-EXEC.
+
+       200-MAIN-LOGIC.
+
+           MOVE DFHCOMMAREA TO WS-SAVE-DATA.
+
+           IF(STU-NUMI = 'XXXXXXX')
+               GO TO 999-EXIT
+           END-IF.
+
+           IF (WS-MODE = 'I')
+      *         GO TO INQUIRY MODE
+                GO TO 225-INQUIRY
+           ELSE
+                IF (WS-MODE = 'U')
+      *             GO TO UPDATE MODE
+                    GO TO 250-UPDATE
+                ELSE
+      *             GO TO ERROR
+                    MOVE LOW-VALUES TO MAP1O
+                    MOVE "INVALID MODE" TO MSGO
+                    GO TO 400-COMMON
+
+                END-IF
+           END-IF.
+
+           MOVE LOW-VALUES TO MAP1O.
+           MOVE "NOTHING HAS HAPPENED YET..." TO MSGO.
+
+      * MOVE VALUES FROM STUREC TO O FIELDS
+
+           GO TO 400-COMMON.
+
+       225-INQUIRY.
+      *    PERFORM INPUT VALIDATION UNTIL VALID NUMBER IS ENTERED
+
+      *    READ STUFF
+           MOVE STU-NUMI TO STU-NUMBER.
+           EXEC CICS READ
+                FILE('STUFILE')
+                RIDFLD(STU-KEY)
+                INTO(STUFILE-RECORD)
+           END-EXEC.
+
+
+
+           PERFORM 450-PREP-UPDATE-MAP.
+           MOVE "RECORD FOUND!!" TO MSGO.
+      *    MOVE EVERYTHING TO OUTPUT
+
+           MOVE STU-NAME TO STU-NAMEO WS-STU-NAME.
+           GO TO 400-COMMON.
+
+
+       250-UPDATE.
+      *    CHECK IF USER HAS CHANGED DATA ON SCREEN
+           IF (STU-NAMEI = WS-STU-NAME)
+                PERFORM 410-PREP-INQUIRY-MAP
+                MOVE 'NOTHING HAS CHANGED, PLEASE ENTER STUDENT NUMBER'
+                TO MSGO
+
+                GO TO 400-COMMON
+           END-IF.
+      *    VALIDATE INPUT
+
+      *    UPDATE
+
+           MOVE STU-NUMI TO STU-NUMBER.
+
+           EXEC CICS READ
+                FILE('STUFILE')
+                RIDFLD(STU-KEY)
+                INTO(STUFILE-RECORD)
+                UPDATE
+           END-EXEC.
+
+           MOVE STU-NAMEI TO STU-NAME.
+      * MORE MOVES HERE
+
+
+           EXEC CICS REWRITE
+                FILE('STUFILE')
+                FROM(STUFILE-RECORD)
+                LENGTH(STUFILE-LENGTH)
+           END-EXEC.
+
+      *    UPDATE SUCCESSFUL
+           PERFORM 410-PREP-INQUIRY-MAP.
+
+           MOVE "RECORD UPDATED" TO MSGO.
+
+           GO TO 400-COMMON.
+
+       300-NOTFND.
+
+           MOVE LOW-VALUES TO MAP1O.
+           MOVE 'STUDENT NOT FOUND' TO MSGO.
+
+           GO TO 400-COMMON.
+
+       400-COMMON.
+           EXEC CICS SEND
+                MAP('MAP1')
+                MAPSET('DCIA8MC')
+                CURSOR
+           END-EXEC.
+
+           EXEC CICS RETURN
+                TRANSID('IA83')
+                COMMAREA(WS-SAVE-DATA)
+                LENGTH(WS-SAVE-DATA-LEN)
+           END-EXEC.
+
+       410-PREP-INQUIRY-MAP.
+           MOVE "I" TO WS-MODE.
+      *    MOVE LOW-VALUES TO MAP1O.
+
+           MOVE "I N Q U I R Y    S C R E E N" TO TITLEO.
+
+           MOVE DFHBMASF TO STU-NAMEA COURSE-1A COURSE-2A COURSE-3A
+                            COURSE-4A COURSE-5A ADDRSS-1A ADDRSS-2A
+                            ADDRSS-3A POSTAL-1A POSTAL-2A PHONE-1A
+                            PHONE-2A PHONE-3A.
+
+
+           GO TO 400-COMMON.
+
+       450-PREP-UPDATE-MAP.
+           MOVE "U" TO WS-MODE.
+      *    MOVE LOW-VALUES TO MAP1O.
+           MOVE "U P D A T E      S C R E E N" TO TITLEO.
+
+           MOVE DFHBMASF TO STU-NUMA.
+           MOVE DFHBMASK TO STU-NAMEA COURSE-1A COURSE-2A COURSE-3A
+                            COURSE-4A COURSE-5A ADDRSS-1A ADDRSS-2A
+                            ADDRSS-3A POSTAL-1A POSTAL-2A PHONE-1A
+                            PHONE-2A PHONE-3A.
+
+
+       999-EXIT.
+           MOVE LOW-VALUES TO MAP1O.
+           MOVE 'PROGRAM ENDING' TO MSGO.
+           EXEC CICS SEND MAP('MAP1') MAPSET('DCIA8MC') END-EXEC.
+           EXEC CICS RETURN END-EXEC.
+
+       END PROGRAM DCIA8PGU.
