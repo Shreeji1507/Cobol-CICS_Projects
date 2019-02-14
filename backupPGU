@@ -1,27 +1,40 @@
        IDENTIFICATION DIVISION.
        PROGRAM-ID. DCIA8PGU.
-       AUTHOR. ANDREW MAYNE.
+       AUTHOR. ANDREW MAYNE SHREEJI PATEL.
 
        ENVIRONMENT DIVISION.
        CONFIGURATION SECTION.
        DATA DIVISION.
        WORKING-STORAGE SECTION.
 
+       01 WS-SAVE-DATA.
+           05 WS-MODE           PIC X VALUE 'I'.
+           05 SD-STU-NUMBER     PIC X(7).
+           05 SD-STU-NAME       PIC X(20).
+           05 SD-STU-COURSE-1   PIC X(8).
+           05 SD-STU-COURSE-2   PIC X(8).
+           05 SD-STU-COURSE-3   PIC X(8).
+           05 SD-STU-COURSE-4   PIC X(8).
+           05 SD-STU-COURSE-5   PIC X(8).
+           05 SD-STU-ADDRESS-1  PIC X(20).
+           05 SD-STU-ADDRESS-2  PIC X(20).
+           05 SD-STU-ADDRESS-3  PIC X(20).
+           05 SD-STU-POSTAL-1   PIC X(3).
+           05 SD-STU-POSTAL-2   PIC X(3).
+           05 SD-STU-PHONE-1    PIC X(3).
+           05 SD-STU-PHONE-2    PIC X(3).
+           05 SD-STU-PHONE-3    PIC X(4).
+
+       01 WS-SAVE-DATA-LEN   PIC S9(4) COMP
+           VALUE 143.
       * COPY INQUIRY MAP LAYOUT
-       COPY 'DCIA8MC'.
+       COPY 'DCIA8MU'.
 
       * COPY ACCTFILE RECORD LAYOUT
        COPY 'STUREC'.
+       COPY 'STUACCT'.
 
       * VARIABLES FOR PASSING DATA BETWEEN RUNS OF THIS PROGRAM
-       01 WS-SAVE-DATA.
-           05 WS-MODE         PIC X
-                VALUE 'I'.
-           05 WS-STU-NAME    PIC X(20).
-
-
-       01 WS-SAVE-DATA-LEN   PIC S9(4) COMP
-           VALUE 21.
 
       * THE BELOW FILLER VARIABLE MUST BE PRESENT BETWEEN DFHBMSCA
       * AND ALL OTHER VARIABLES
@@ -32,7 +45,7 @@
 
        LINKAGE SECTION.
 
-       01 DFHCOMMAREA PIC X(21).
+       01 DFHCOMMAREA PIC X(303).
 
        PROCEDURE DIVISION.
 
@@ -57,7 +70,7 @@
       * ATTEMPT TO RECEIVE MAP FROM TERMINAL
            EXEC CICS RECEIVE
                 MAP('MAP1')
-                MAPSET('DCIA8MC')
+                MAPSET('DCIA8MU')
            END-EXEC.
 
       * RECEIVE WAS SUCCESSFUL, PROCEED WITH MAIN PROCESSING
@@ -65,11 +78,12 @@
 
        100-FIRST-TIME.
 
+           MOVE LOW-VALUES TO MAP1O.
            PERFORM 410-PREP-INQUIRY-MAP.
 
            EXEC CICS SEND
                MAP('MAP1')
-               MAPSET('DCIA8MC')
+               MAPSET('DCIA8MU')
                ERASE
            END-EXEC.
 
@@ -81,39 +95,59 @@
 
        200-MAIN-LOGIC.
 
-           MOVE DFHCOMMAREA TO WS-SAVE-DATA.
+      *    MOVE DFHCOMMAREA TO WS-COMMAREA.
 
            IF(STU-NUMI = 'XXXXXXX')
                GO TO 999-EXIT
            END-IF.
 
            IF (WS-MODE = 'I')
-      *         GO TO INQUIRY MODE
                 GO TO 225-INQUIRY
            ELSE
                 IF (WS-MODE = 'U')
-      *             GO TO UPDATE MODE
                     GO TO 250-UPDATE
                 ELSE
-      *             GO TO ERROR
                     MOVE LOW-VALUES TO MAP1O
                     MOVE "INVALID MODE" TO MSGO
-                    GO TO 400-COMMON
-
+                    GO TO 400-RETURN
                 END-IF
            END-IF.
 
-           MOVE LOW-VALUES TO MAP1O.
-           MOVE "NOTHING HAS HAPPENED YET..." TO MSGO.
+           EXEC CICS SEND
+                MAP('MAP1')
+                MAPSET('DCIA8MU')
+           END-EXEC.
 
-      * MOVE VALUES FROM STUREC TO O FIELDS
-
-           GO TO 400-COMMON.
+           EXEC CICS RETURN
+                TRANSID('IA83')
+                COMMAREA(WS-SAVE-DATA)
+                LENGTH(WS-SAVE-DATA-LEN)
+           END-EXEC.
 
        225-INQUIRY.
-      *    PERFORM INPUT VALIDATION UNTIL VALID NUMBER IS ENTERED
 
-      *    READ STUFF
+           PERFORM 410-PREP-INQUIRY-MAP.
+      *    PERFORM INPUT VALIDATION UNTIL VALID NUMBER IS ENTERED
+           IF (STU-NUML = 0)
+                MOVE 'YOU MUST ENTER STUDENT NUMBER' TO MSGO
+                MOVE -1 TO STU-NUML
+                GO TO 400-RETURN
+           END-IF.
+
+           IF (STU-NUML > 0 AND STU-NUML < 7)
+                MOVE 'STUDENT NUMBER MUST BE 7-DIGIT LONG NUMBER'
+                TO MSGO
+                MOVE -1 TO STU-NUML
+                GO TO 400-RETURN
+           END-IF.
+
+           IF (STU-NUMI IS NOT NUMERIC)
+                MOVE 'STUDENT NUMBER MUST BE NUMERIC' TO MSGO
+                MOVE -1 TO STU-NUML
+                GO TO 400-RETURN
+           END-IF.
+
+      *    READ
            MOVE STU-NUMI TO STU-NUMBER.
            EXEC CICS READ
                 FILE('STUFILE')
@@ -121,26 +155,174 @@
                 INTO(STUFILE-RECORD)
            END-EXEC.
 
-
-
            PERFORM 450-PREP-UPDATE-MAP.
            MOVE "RECORD FOUND!!" TO MSGO.
+
       *    MOVE EVERYTHING TO OUTPUT
 
-           MOVE STU-NAME TO STU-NAMEO WS-STU-NAME.
-           GO TO 400-COMMON.
+           MOVE STU-NAME TO STU-NAMEO SD-STU-NAME.
+           MOVE STU-COURSE-1 TO COURSE-1O SD-STU-COURSE-1.
+           MOVE STU-COURSE-2 TO COURSE-2O SD-STU-COURSE-2.
+           MOVE STU-COURSE-3 TO COURSE-3O SD-STU-COURSE-3.
+           MOVE STU-COURSE-4 TO COURSE-4O SD-STU-COURSE-4.
+           MOVE STU-COURSE-5 TO COURSE-5O SD-STU-COURSE-5.
 
+           MOVE STU-ADDRESS-1 TO ADDRSS-1O SD-STU-ADDRESS-1.
+           MOVE STU-ADDRESS-2 TO ADDRSS-2O SD-STU-ADDRESS-2.
+           MOVE STU-ADDRESS-3 TO ADDRSS-3O SD-STU-ADDRESS-3.
+           MOVE STU-POSTAL-1 TO POSTAL-1O SD-STU-POSTAL-1.
+           MOVE STU-POSTAL-2 TO POSTAL-2O SD-STU-POSTAL-2.
+
+           MOVE STU-PHONE-1 TO PHONE-1O SD-STU-PHONE-1.
+           MOVE STU-PHONE-2 TO PHONE-2O SD-STU-PHONE-2.
+           MOVE STU-PHONE-3 TO PHONE-3O SD-STU-PHONE-3.
+
+           MOVE -1 TO STU-NAMEL.
+
+           EXEC CICS SEND
+                MAP('MAP1')
+                MAPSET('DCIA8MU')
+                CURSOR
+           END-EXEC.
+
+           EXEC CICS RETURN
+                TRANSID('IA83')
+                COMMAREA(WS-SAVE-DATA)
+                LENGTH(WS-SAVE-DATA-LEN)
+           END-EXEC.
 
        250-UPDATE.
       *    CHECK IF USER HAS CHANGED DATA ON SCREEN
-           IF (STU-NAMEI = WS-STU-NAME)
-                PERFORM 410-PREP-INQUIRY-MAP
-                MOVE 'NOTHING HAS CHANGED, PLEASE ENTER STUDENT NUMBER'
-                TO MSGO
+           IF (STU-NAMEI = SD-STU-NAME
+               AND COURSE-1I = SD-STU-COURSE-1
+               AND COURSE-2I = SD-STU-COURSE-2
+               AND COURSE-3I = SD-STU-COURSE-3
+               AND COURSE-4I = SD-STU-COURSE-4
+               AND COURSE-5I = SD-STU-COURSE-5
+               AND ADDRSS-1I = SD-STU-ADDRESS-1
+               AND ADDRSS-2I = SD-STU-ADDRESS-2
+               AND ADDRSS-3I = SD-STU-ADDRESS-3
+               AND POSTAL-1I = SD-STU-POSTAL-1
+               AND POSTAL-2I = SD-STU-POSTAL-2
+               AND PHONE-1I = SD-STU-PHONE-1
+               AND PHONE-2I = SD-STU-PHONE-2
+               AND PHONE-3I = SD-STU-PHONE-3)
 
-                GO TO 400-COMMON
+      *        PERFORM 410-PREP-INQUIRY-MAP
+               MOVE 'NOTHING HAS CHANGED, PLEASE ENTER STUDENT NUMBER'
+               TO MSGO
+
+               GO TO 400-RETURN
            END-IF.
+
       *    VALIDATE INPUT
+           MOVE STU-NAMEI TO WS-STU-NAME.
+           MOVE COURSE-1I TO WS-STU-COURSE-1.
+           MOVE COURSE-2I TO WS-STU-COURSE-2.
+           MOVE COURSE-3I TO WS-STU-COURSE-3.
+           MOVE COURSE-4I TO WS-STU-COURSE-4.
+           MOVE COURSE-5I TO WS-STU-COURSE-5.
+           MOVE ADDRSS-1I TO WS-STU-ADDRESS-1.
+           MOVE ADDRSS-2I TO WS-STU-ADDRESS-2.
+           MOVE ADDRSS-3I TO WS-STU-ADDRESS-3.
+           MOVE POSTAL-1I TO WS-STU-POSTAL-1.
+           MOVE POSTAL-2I TO WS-STU-POSTAL-2.
+           MOVE PHONE-1I  TO WS-STU-PHONE-1.
+           MOVE PHONE-2I  TO WS-STU-PHONE-2.
+           MOVE PHONE-3I  TO WS-STU-PHONE-3.
+
+      *    LENGTHS
+           MOVE STU-NUML  TO WS-STU-NUMBER-LEN.
+           MOVE STU-NAMEL TO WS-STU-NAME-LEN.
+           MOVE COURSE-1L TO WS-STU-COURSE-1-LEN.
+           MOVE COURSE-2L TO WS-STU-COURSE-2-LEN.
+           MOVE COURSE-3L TO WS-STU-COURSE-3-LEN.
+           MOVE COURSE-4L TO WS-STU-COURSE-4-LEN.
+           MOVE COURSE-5L TO WS-STU-COURSE-5-LEN.
+           MOVE ADDRSS-1L TO WS-STU-ADDRESS-1-LEN.
+           MOVE ADDRSS-2L TO WS-STU-ADDRESS-2-LEN.
+           MOVE ADDRSS-3L TO WS-STU-ADDRESS-3-LEN.
+           MOVE POSTAL-1L TO WS-STU-POSTAL-1-LEN.
+           MOVE POSTAL-2L TO WS-STU-POSTAL-2-LEN.
+           MOVE PHONE-1L  TO WS-STU-PHONE-1-LEN.
+           MOVE PHONE-2L  TO WS-STU-PHONE-2-LEN.
+           MOVE PHONE-3L  TO WS-STU-PHONE-3-LEN.
+
+           EXEC CICS LINK
+               PROGRAM('DCIA8PGE')
+               COMMAREA(WS-COMMAREA)
+               LENGTH(WS-COMMAREA-LEN)
+           END-EXEC.
+
+           IF (WS-STU-FIELD = 1)
+                MOVE -1 TO STU-NUML
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 400-RETURN
+           END-IF.
+
+           IF (WS-STU-FIELD = 2)
+                MOVE -1 TO STU-NAMEL
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 400-RETURN
+           END-IF.
+
+           IF (WS-STU-FIELD = 3)
+                MOVE -1 TO COURSE-1L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 400-RETURN
+           END-IF.
+
+           IF (WS-STU-FIELD = 4)
+                MOVE -1 TO COURSE-2L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 400-RETURN
+           END-IF.
+
+           IF (WS-STU-FIELD = 5)
+                MOVE -1 TO COURSE-3L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 400-RETURN
+           END-IF.
+
+           IF (WS-STU-FIELD = 6)
+                MOVE -1 TO COURSE-4L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 400-RETURN
+           END-IF.
+
+           IF (WS-STU-FIELD = 7)
+                MOVE -1 TO COURSE-5L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 400-RETURN
+           END-IF.
+
+           IF (WS-STU-FIELD = 8)
+                MOVE -1 TO ADDRSS-1L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 400-RETURN
+           END-IF.
+
+           IF (WS-STU-FIELD = 9)
+                MOVE -1 TO ADDRSS-2L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 400-RETURN
+           END-IF.
+
+           IF (WS-STU-FIELD = 10)
+                MOVE -1 TO POSTAL-1L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 400-RETURN
+           END-IF.
+
+           IF (WS-STU-FIELD = 11)
+                MOVE -1 TO PHONE-1L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 400-RETURN
+           END-IF.
+
+           IF (WS-STU-FIELD = 12)
+                GO TO 999-EXIT
+           END-IF.
 
       *    UPDATE
 
@@ -154,8 +336,25 @@
            END-EXEC.
 
            MOVE STU-NAMEI TO STU-NAME.
-      * MORE MOVES HERE
+           MOVE WS-STU-NUMBER   TO STU-NUMBER.
+           MOVE WS-STU-NAME     TO STU-NAME.
+           MOVE WS-STU-COURSE-1 TO STU-COURSE-1.
+           MOVE WS-STU-COURSE-2 TO STU-COURSE-2.
+           MOVE WS-STU-COURSE-3 TO STU-COURSE-3.
+           MOVE WS-STU-COURSE-4 TO STU-COURSE-4.
+           MOVE WS-STU-COURSE-5 TO STU-COURSE-5.
 
+           MOVE ADDRSS-1I TO STU-ADDRESS-1.
+           MOVE ADDRSS-2I TO STU-ADDRESS-2.
+           MOVE ADDRSS-3I TO STU-ADDRESS-3.
+
+           MOVE POSTAL-1I TO STU-POSTAL-1.
+           MOVE POSTAL-2I TO STU-POSTAL-2.
+
+           MOVE WS-STU-PHONE-1 TO STU-PHONE-1.
+           MOVE WS-STU-PHONE-2 TO STU-PHONE-2.
+           MOVE WS-STU-PHONE-3 TO STU-PHONE-3.
+      * MORE MOVES HERE
 
            EXEC CICS REWRITE
                 FILE('STUFILE')
@@ -168,19 +367,37 @@
 
            MOVE "RECORD UPDATED" TO MSGO.
 
-           GO TO 400-COMMON.
+           EXEC CICS SEND
+                MAP('MAP1')
+                MAPSET('DCIA8MU')
+           END-EXEC.
+
+           EXEC CICS RETURN
+                TRANSID('IA83')
+                COMMAREA(WS-SAVE-DATA)
+                LENGTH(WS-SAVE-DATA-LEN)
+           END-EXEC.
 
        300-NOTFND.
 
            MOVE LOW-VALUES TO MAP1O.
            MOVE 'STUDENT NOT FOUND' TO MSGO.
 
-           GO TO 400-COMMON.
-
-       400-COMMON.
            EXEC CICS SEND
                 MAP('MAP1')
-                MAPSET('DCIA8MC')
+                MAPSET('DCIA8MU')
+           END-EXEC.
+
+           EXEC CICS RETURN
+                TRANSID('IA83')
+                COMMAREA(WS-SAVE-DATA)
+                LENGTH(WS-SAVE-DATA-LEN)
+           END-EXEC.
+
+       400-RETURN.
+           EXEC CICS SEND
+                MAP('MAP1')
+                MAPSET('DCIA8MU')
                 CURSOR
            END-EXEC.
 
@@ -192,9 +409,6 @@
 
        410-PREP-INQUIRY-MAP.
            MOVE "I" TO WS-MODE.
-      *    MOVE LOW-VALUES TO MAP1O.
-
-           MOVE "I N Q U I R Y    S C R E E N" TO TITLEO.
 
            MOVE DFHBMASF TO STU-NAMEA COURSE-1A COURSE-2A COURSE-3A
                             COURSE-4A COURSE-5A ADDRSS-1A ADDRSS-2A
@@ -202,24 +416,23 @@
                             PHONE-2A PHONE-3A.
 
 
-           GO TO 400-COMMON.
-
        450-PREP-UPDATE-MAP.
            MOVE "U" TO WS-MODE.
-      *    MOVE LOW-VALUES TO MAP1O.
-           MOVE "U P D A T E      S C R E E N" TO TITLEO.
 
+           MOVE "U P D A T E      S C R E E N" TO TITLEO.
            MOVE DFHBMASF TO STU-NUMA.
-           MOVE DFHBMASK TO STU-NAMEA COURSE-1A COURSE-2A COURSE-3A
+           MOVE DFHBMUNP TO STU-NAMEA COURSE-1A COURSE-2A COURSE-3A
                             COURSE-4A COURSE-5A ADDRSS-1A ADDRSS-2A
                             ADDRSS-3A POSTAL-1A POSTAL-2A PHONE-1A
                             PHONE-2A PHONE-3A.
 
-
        999-EXIT.
            MOVE LOW-VALUES TO MAP1O.
            MOVE 'PROGRAM ENDING' TO MSGO.
-           EXEC CICS SEND MAP('MAP1') MAPSET('DCIA8MC') END-EXEC.
-           EXEC CICS RETURN END-EXEC.
+           EXEC CICS XCTL
+                PROGRAM('DCIA8PGM')
+                COMMAREA(WS-COMMAREA)
+                LENGTH(WS-COMMAREA-LEN)
+           END-EXEC.
 
        END PROGRAM DCIA8PGU.
