@@ -1,0 +1,107 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. DCIA8WSR.
+       AUTHOR. SHREEJI PATEL.
+
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+
+       COPY 'STUREQ'.
+       COPY 'STURESP'.
+       COPY 'STUREC'.
+
+       01 LEN       PIC 9(03) COMP-5.
+       LINKAGE SECTION.
+
+       01 DFHCOMMAREA PIC X(164).
+
+       PROCEDURE DIVISION.
+
+           EXEC CICS HANDLE CONDITION
+                NOTFND(300-NOTFND)
+           END-EXEC.
+
+           MOVE DFHCOMMAREA TO STU-REQ.
+
+           MOVE 0 TO LEN.
+
+      *    INSPECT STUNUM OF STU-REQ
+      *         TALLYING LEN FOR LEADING SPACES.
+      *
+      *     COMPUTE LEN = LENGTH OF STUNUM OF STU-REQ - LEN.
+      *     https://community.microfocus.com/microfocus/cobol/net_expres
+      *     s__server_express/w/knowledge_base/4080/how-to-calculate-the
+      *     -length-of-a-string-inside-a-character-variable
+
+           INSPECT FUNCTION REVERSE(STUNUM OF STU-REQ)
+                TALLYING LEN FOR LEADING SPACES.
+
+            COMPUTE LEN = LENGTH OF STUNUM OF STU-REQ - LEN.
+
+      *    INSPECT STUNUM OF STU-REQ TALLYING LEN FOR CHARACTERS.
+
+           IF (LEN = 0)
+                MOVE LOW-VALUES TO STU-RESP
+                MOVE 'YOU MUST ENTER STUDENT NUMBER' TO MSG
+                GO TO 100-ERROR-RETURN
+           END-IF.
+
+           IF ((LEN > 0 AND LEN < 7) OR LEN > 7)
+               MOVE LOW-VALUES TO STU-RESP
+               MOVE 'STUDENT NUMBER MUST BE 7-DIGIT LONG NUMBER'
+                TO MSG
+               GO TO 100-ERROR-RETURN
+           END-IF.
+
+           IF (STUNUM OF STU-REQ IS NOT NUMERIC)
+                MOVE LOW-VALUES TO STU-RESP
+
+                MOVE 'STUDENT NUMBER MUST BE NUMERIC'
+                 TO MSG
+                GO TO 100-ERROR-RETURN
+           END-IF.
+
+           MOVE STUNUM OF STU-REQ TO STU-NUMBER.
+
+           EXEC CICS READ
+                FILE('STUFILE')
+                RIDFLD(STU-KEY)
+                INTO(STUFILE-RECORD)
+           END-EXEC.
+
+           MOVE 0 TO STATUS-CODE.
+           MOVE 'SUCCESS' TO MSG OF STU-RESP.
+
+      *    move all the data to the stu-response.
+           MOVE STU-NUMBER TO STUNUM OF STU-RESP.
+           MOVE STU-NAME  TO STUNAME OF STU-RESP.
+           MOVE STU-ADDRESS-1 TO ADDR1 OF STU-RESP.
+           MOVE STU-ADDRESS-2 TO ADDR2 OF STU-RESP.
+           MOVE STU-ADDRESS-3 TO ADDR3 OF STU-RESP.
+           MOVE STU-POSTAL-1 TO POSTCODE(1:3).
+           MOVE STU-POSTAL-2 TO POSTCODE(4:3).
+           MOVE STU-PHONE-1 TO PHONENUM(1:3).
+           MOVE STU-PHONE-2 TO PHONENUM(4:3).
+           MOVE STU-PHONE-3 TO PHONENUM(7:4).
+
+           MOVE LOW-VALUES TO DFHCOMMAREA.
+
+           MOVE STU-RESP TO DFHCOMMAREA.
+
+           EXEC CICS RETURN END-EXEC.
+
+       100-ERROR-RETURN.
+
+           MOVE 1 TO STATUS-CODE.
+           MOVE STU-RESP TO DFHCOMMAREA.
+           EXEC CICS RETURN END-EXEC.
+
+       300-NOTFND.
+
+           MOVE LOW-VALUES TO STU-RESP.
+           MOVE 2 TO STATUS-CODE.
+           MOVE 'STUDENT NOT FOUND' TO MSG OF STU-RESP.
+           MOVE STU-RESP TO DFHCOMMAREA.
+           EXEC CICS RETURN END-EXEC.
+       END PROGRAM DCIA8WSR.
