@@ -1,0 +1,184 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. DCIA8PGM.
+       AUTHOR. ANDREW MAYNE.
+
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+
+       01 WS-CHOICEI PIC X.
+           88 WS-ONE VALUE '1'.
+           88 WS-TWO VALUE '2'.
+           88 WS-THREE VALUE '3'.
+           88 WS-FOUR VALUE '4'.
+           88 WS-NINE VALUE '9'.
+
+       COPY 'DCIA8MM'.
+       01 WS-COMMAREA     PIC X(1) VALUE 'X'.
+       01 WS-COMMAREA-LEN PIC S9(4) COMP VALUE 1.
+
+       LINKAGE SECTION.
+
+       01 DFHCOMMAREA PIC X(1).
+
+       PROCEDURE DIVISION.
+
+       000-START-LOGIC.
+
+           IF (EIBCALEN = 1) THEN
+                GO TO 100-FIRST-TIME
+           END-IF.
+
+           EXEC CICS HANDLE CONDITION
+                MAPFAIL(100-FIRST-TIME)
+           END-EXEC.
+
+           EXEC CICS HANDLE AID
+                PF1 (300-CHOICE-1)
+                PF2 (400-CHOICE-2)
+                PF3 (500-CHOICE-3)
+                PF4 (600-CHOICE-4)
+                PF9 (700-CHOICE-9)
+           END-EXEC.
+
+           EXEC CICS RECEIVE
+                MAP('MAP1')
+                MAPSET('DCIA8MM')
+           END-EXEC.
+
+
+           GO TO 200-MAIN.
+
+       100-FIRST-TIME.
+
+           MOVE LOW-VALUES TO MAP1O.
+           EXEC CICS SEND
+               MAP('MAP1')
+               MAPSET('DCIA8MM')
+               ERASE
+           END-EXEC.
+
+           EXEC CICS RETURN
+               TRANSID('IA80')
+           END-EXEC.
+
+      * 200-MAIN-LOGIC.
+        200-MAIN.
+
+           MOVE CHOICEI TO WS-CHOICEI.
+
+           IF (CHOICEL = 0)
+                GO TO 250-EMPTY-CHOICE
+           ELSE
+                IF (WS-CHOICEI IS NUMERIC)
+                     IF WS-ONE
+                          GO TO 300-CHOICE-1
+                     ELSE
+                          IF WS-TWO
+                              GO TO 400-CHOICE-2
+                          ELSE
+                              IF WS-THREE
+                                  GO TO 500-CHOICE-3
+                              ELSE
+                                  IF WS-FOUR
+                                      GO TO 600-CHOICE-4
+                                  ELSE
+                                      IF WS-NINE
+                                          GO TO 700-CHOICE-9
+                                      ELSE
+                                          GO TO 800-INVALID-CHOICE
+                                      END-IF
+                                  END-IF
+                              END-IF
+                          END-IF
+                     END-IF
+                ELSE
+                     GO TO 850-INVALID-OPTION
+                END-IF
+           END-IF.
+
+        250-EMPTY-CHOICE.
+           MOVE LOW-VALUES TO MAP1O.
+           MOVE 'YOU MUST ENTER YOUR CHOICE!!' TO MSGO.
+           EXEC CICS SEND MAP('MAP1') MAPSET('DCIA8MM') END-EXEC.
+           EXEC CICS RETURN TRANSID('IA80') END-EXEC.
+
+        300-CHOICE-1.
+
+           EXEC CICS XCTL
+                PROGRAM('DCIA8PGC')
+                COMMAREA(WS-COMMAREA)
+                LENGTH(WS-COMMAREA-LEN)
+           END-EXEC.
+
+      *    MOVE LOW-VALUES TO MAP1O.
+      *    MOVE 'YOU ENTERED: 1 - ENTER NEW STUDENT' TO MSGO.
+      *    EXEC CICS SEND MAP('MAP1') MAPSET('DCIA8MM') END-EXEC.
+      *    EXEC CICS RETURN TRANSID('IA80') END-EXEC.
+
+       400-CHOICE-2.
+
+           EXEC CICS XCTL
+                PROGRAM('DCIA8PGR')
+                COMMAREA(WS-COMMAREA)
+                LENGTH(WS-COMMAREA-LEN)
+           END-EXEC.
+
+      *    MOVE LOW-VALUES TO MAP1O.
+      *    MOVE 'YOU ENTERED: 2 - INQUIRE BY STUDENT NUMBER' TO MSGO.
+      *    EXEC CICS SEND MAP('MAP1') MAPSET('DCIA8MM') END-EXEC.
+      *    EXEC CICS RETURN TRANSID('IA80') END-EXEC.
+
+       500-CHOICE-3.
+           EXEC CICS XCTL
+                PROGRAM('DCIA8PGU')
+                COMMAREA(WS-COMMAREA)
+                LENGTH(WS-COMMAREA-LEN)
+           END-EXEC.
+      *    MOVE LOW-VALUES TO MAP1O.
+      *    MOVE 'YOU ENTERED: 3 - CHANGE OR DELETE EXISTING STUENT'
+      *         TO MSGO.
+      *    EXEC CICS SEND MAP('MAP1') MAPSET('DCIA8MM') END-EXEC.
+      *    EXEC CICS RETURN TRANSID('IA80') END-EXEC.
+
+       600-CHOICE-4.
+           MOVE LOW-VALUES TO MAP1O.
+           MOVE 'YOU ENTERED: 4 - SEARCH BY STUDENT NAME' TO MSGO.
+           EXEC CICS SEND MAP('MAP1') MAPSET('DCIA8MM') END-EXEC.
+           EXEC CICS RETURN TRANSID('IA80') END-EXEC.
+
+       700-CHOICE-9.
+
+           MOVE LOW-VALUES TO MAP1O.
+           MOVE 'APPLICATION EXITING' TO MSGO.
+           EXEC CICS SEND MAP('MAP1') MAPSET('DCIA8MM') END-EXEC.
+           EXEC CICS RETURN END-EXEC.
+      *    EXEC CICS SEND CONTROL ERASE FREEKB END-EXEC.
+      *    EXEC CICS RETURN END-EXEC.
+
+
+       800-INVALID-CHOICE.
+           MOVE LOW-VALUES TO MAP1O.
+           MOVE 'INVALID CHOICE. TRY ANY NUMBER FROM MENU!!' TO MSGO.
+           EXEC CICS SEND
+                MAP('MAP1')
+                MAPSET('DCIA8MM')
+           END-EXEC.
+
+           EXEC CICS RETURN
+                TRANSID('IA80')
+           END-EXEC.
+
+       850-INVALID-OPTION.
+           MOVE LOW-VALUES TO MAP1O.
+           MOVE 'INVALID CHOICE. CHOICE MUST BE NUMERIC!!' TO MSGO.
+           EXEC CICS SEND
+                MAP('MAP1')
+                MAPSET('DCIA8MM')
+           END-EXEC.
+
+           EXEC CICS RETURN
+                TRANSID('IA80')
+           END-EXEC.
+       END PROGRAM DCIA8PGM.
