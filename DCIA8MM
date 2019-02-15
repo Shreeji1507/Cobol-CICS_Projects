@@ -1,0 +1,40 @@
+*REPLACE XXX WITH THE LAST 3 CHARACTERS OF YOUR USER ID
+DCIA8MM  DFHMSD TYPE=&SYSPARM,MODE=INOUT,TERM=ALL,                     *
+               LANG=COBOL,TIOAPFX=YES,CTRL=FREEKB,                     *
+               MAPATTS=(COLOR,HILIGHT),DSATTS=(COLOR,HILIGHT)
+MAP1     DFHMDI SIZE=(24,80),LINE=1,COLUMN=1
+TITLE    DFHMDF POS=(3,29),LENGTH=20,ATTRB=(ASKIP,BRT),                *
+               INITIAL='M A I N    M E N U'                   	
+         DFHMDF POS=(4,29),LENGTH=20,ATTRB=(ASKIP,BRT),                *
+               INITIAL='=================='
+         DFHMDF POS=(7,23),LENGTH=28,ATTRB=(ASKIP,NORM),               *
+               INITIAL='CHOICE 1 - ENTER NEW STUDENT'
+         DFHMDF POS=(9,23),LENGTH=36,ATTRB=(ASKIP,NORM),               *
+               INITIAL='CHOICE 2 - INQUIRE BY STUDENT NUMBER'
+         DFHMDF POS=(11,23),LENGTH=43,ATTRB=(ASKIP,NORM),              *
+               INITIAL='CHOICE 3 - CHANGE OR DELETE EXISTING STUENT'
+         DFHMDF POS=(13,23),LENGTH=33,ATTRB=(ASKIP,NORM),              *
+               INITIAL='CHOICE 4 - SEARCH BY STUDENT NAME'
+         DFHMDF POS=(15,23),LENGTH=27,ATTRB=(ASKIP,NORM),              *
+               INITIAL='CHOICE 9 - EXIT THIS SCREEN'
+         DFHMDF POS=(17,23),LENGTH=23,ATTRB=(ASKIP,NORM),              *
+               INITIAL='ENTER YOUR CHOICE HERE:'
+CHOICE   DFHMDF POS=(17,47),LENGTH=1,ATTRB=(UNPROT,IC,FSET)
+         DFHMDF POS=(17,49),LENGTH=1,ATTRB=(ASKIP)
+         DFHMDF POS=(21,4),LENGTH=22,INITIAL='F1 - ENTER NEW STUDENT', *
+               ATTRB=(ASKIP,NORM),HILIGHT=OFF,COLOR=BLUE
+         DFHMDF POS=(21,44),LENGTH=27,                                 *
+               INITIAL='F4 - SEARCH BY STUDENT NAME',                  *
+               ATTRB=(ASKIP,NORM),HILIGHT=OFF,COLOR=BLUE
+         DFHMDF POS=(22,4),LENGTH=38,                                  *
+               INITIAL='F2 - INQUIRE STUDENT BY STUDENT NUMBER',       *
+               ATTRB=(ASKIP,NORM),HILIGHT=OFF,COLOR=BLUE
+         DFHMDF POS=(22,44),LENGTH=21,INITIAL='F9 - EXIT THIS SCREEN', *
+               ATTRB=(ASKIP,NORM),HILIGHT=OFF,COLOR=BLUE
+         DFHMDF POS=(23,4),LENGTH=38,                                  *
+               INITIAL='F3 - CHANGE OR DELETE EXISTING STUDENT',       *
+               ATTRB=(ASKIP,NORM),HILIGHT=OFF,COLOR=BLUE
+MSG      DFHMDF POS=(19,20),LENGTH=50,                                 *
+               ATTRB=(ASKIP,BRT)
+DCIA8MM  DFHMSD TYPE=FINAL
+                 END
