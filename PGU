@@ -7,6 +7,8 @@
        DATA DIVISION.
        WORKING-STORAGE SECTION.
 
+       01 WS-XCTL     PIC X(1) VALUE 'X'.
+       01 WS-XCTL-LEN PIC S9(4) COMP VALUE 1.
       * VARIABLES FOR PASSING DATA BETWEEN RUNS OF THIS PROGRAM
        01 WS-SAVE-DATA.
            05 WS-MODE           PIC X VALUE 'I'.
@@ -161,7 +163,7 @@
            MOVE STU-PHONE-2 TO PHONE-2O SD-STU-PHONE-2.
            MOVE STU-PHONE-3 TO PHONE-3O SD-STU-PHONE-3.
 
-           MOVE -1 TO STU-NAMEL.
+      *    MOVE -1 TO STU-NAMEL.
 
            EXEC CICS SEND
                 MAP('MAP1')
@@ -192,10 +194,11 @@
                AND PHONE-2I  = SD-STU-PHONE-2
                AND PHONE-3I  = SD-STU-PHONE-3)
 
-
-                PERFORM 410-PREP-INQUIRY-MAP
-                MOVE 'NOTHING HAS CHANGED, PLEASE ENTER STUDENT NUMBER'
+                MOVE LOW-VALUES TO MAP1O
+                MOVE
+                'NOTHING HAS CHANGED, ENTER DIFFERENT STUDENT NUMBER'
                 TO MSGO
+                PERFORM 410-PREP-INQUIRY-MAP
 
                 EXEC CICS SEND
                      MAP('MAP1')
@@ -255,13 +258,16 @@
            END-EXEC.
 
       *    UPDATE SUCCESSFUL
-           PERFORM 410-PREP-INQUIRY-MAP.
 
-           MOVE "RECORD UPDATED" TO MSGO.
+           MOVE LOW-VALUES TO MAP1O.
+           MOVE "RECORD UPDATED, ENTER DIFFERENT STUDENT NUMBER"
+           TO MSGO.
+           PERFORM 410-PREP-INQUIRY-MAP.
 
            EXEC CICS SEND
                 MAP('MAP1')
                 MAPSET('DCIA8MU')
+                ERASE
            END-EXEC.
 
            EXEC CICS RETURN
@@ -303,8 +309,8 @@
 
        410-PREP-INQUIRY-MAP.
       *    TO BE COMMENTED OUT AFTER
-      *    MOVE LOW-VALUES TO MAPO.
-           MOVE "I N Q U I R Y     S C R E E N" TO TITLEO.
+      *    MOVE LOW-VALUES TO MAP1O.
+           MOVE "U P D A T E      S C R E E N" TO TITLEO.
 
            MOVE DFHBMASF TO STU-NAMEA COURSE-1A COURSE-2A COURSE-3A
                             COURSE-4A COURSE-5A ADDRSS-1A ADDRSS-2A
@@ -317,10 +323,6 @@
            MOVE LOW-VALUES TO MAP1O.
            MOVE "U P D A T E      S C R E E N" TO TITLEO.
            MOVE DFHBMASF TO STU-NUMA.
-      *    MOVE DFHBMUNP TO STU-NAMEA COURSE-1A COURSE-2A COURSE-3A
-      *                     COURSE-4A COURSE-5A ADDRSS-1A ADDRSS-2A
-      *                     ADDRSS-3A POSTAL-1A POSTAL-2A PHONE-1A
-      *                     PHONE-2A PHONE-3A.
            MOVE "U" TO WS-MODE.
            MOVE -1 TO STU-NAMEL.
 
@@ -329,8 +331,8 @@
            MOVE 'PROGRAM ENDING' TO MSGO.
            EXEC CICS XCTL
                 PROGRAM('DCIA8PGM')
-                COMMAREA(WS-COMMAREA)
-                LENGTH(WS-COMMAREA-LEN)
+                COMMAREA(WS-XCTL)
+                LENGTH(WS-XCTL-LEN)
            END-EXEC.
 
        550-VALIDATE-INPUT.
