@@ -95,6 +95,7 @@
            IF(STU-NUMI = 'XXXXXXX')
                GO TO 999-EXIT
            END-IF.
+           MOVE DFHCOMMAREA TO WS-SAVE-DATA.
 
            IF (WS-MODE = 'I')
                 GO TO 225-INQUIRY
@@ -191,16 +192,30 @@
                AND PHONE-2I  = SD-STU-PHONE-2
                AND PHONE-3I  = SD-STU-PHONE-3)
 
-               MOVE 'NOTHING HAS CHANGED, PLEASE ENTER STUDENT NUMBER'
-               TO MSGO
 
-               PERFORM 410-PREP-INQUIRY-MAP
+                PERFORM 410-PREP-INQUIRY-MAP
+                MOVE 'NOTHING HAS CHANGED, PLEASE ENTER STUDENT NUMBER'
+                TO MSGO
 
-           ELSE
-                PERFORM 450-PREP-UPDATE-MAP
-                GO TO 550-VALIDATE-INPUT
+                EXEC CICS SEND
+                     MAP('MAP1')
+                     MAPSET('DCIA8MU')
+                     ERASE
+                END-EXEC
+
+                EXEC CICS RETURN
+                     TRANSID('IA83')
+                     COMMAREA(WS-SAVE-DATA)
+                     LENGTH(WS-SAVE-DATA-LEN)
+                END-EXEC
+
            END-IF.
 
+           PERFORM 550-VALIDATE-INPUT.
+
+           IF (WS-STU-FIELD NOT EQUAL 0)
+                GO TO 575-VALIDATION-ERROR
+           END-IF.
       *    UPDATE
 
            MOVE STU-NUMI TO STU-NUMBER.
@@ -319,6 +334,7 @@
            END-EXEC.
 
        550-VALIDATE-INPUT.
+           MOVE STU-NUMI TO WS-STU-NUMBER.
            MOVE STU-NAMEI TO WS-STU-NAME.
            MOVE COURSE-1I TO WS-STU-COURSE-1.
            MOVE COURSE-2I TO WS-STU-COURSE-2.
@@ -356,6 +372,10 @@
                COMMAREA(WS-COMMAREA)
                LENGTH(WS-COMMAREA-LEN)
            END-EXEC.
+
+       575-VALIDATION-ERROR.
+
+           PERFORM 450-PREP-UPDATE-MAP.
 
            IF (WS-STU-FIELD = 1)
                 MOVE -1 TO STU-NUML
