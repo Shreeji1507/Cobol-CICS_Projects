@@ -1,0 +1,263 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. DCIA8PGC.
+       AUTHOR. ANDREW MAYNE, SHREEJI PATEL.
+
+       ENVIRONMENT DIVISION.
+       CONFIGURATION SECTION.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+
+       01 WS-XCTL     PIC X(1) VALUE 'X'.
+       01 WS-XCTL-LEN PIC S9(4) COMP VALUE 1.
+
+       COPY 'DCIA8MC'.
+
+      * COPY STUREC RECORD LAYOUT
+       COPY 'STUREC'.
+       COPY 'STUACCT'.
+
+       LINKAGE SECTION.
+
+       01 DFHCOMMAREA PIC X(303).
+
+       PROCEDURE DIVISION.
+
+       000-START-LOGIC.
+
+           IF (EIBCALEN = 1) THEN
+                GO TO 100-FIRST-TIME
+           END-IF.
+
+           EXEC CICS HANDLE CONDITION
+                MAPFAIL(100-FIRST-TIME)
+                DUPREC(300-DUPREC)
+           END-EXEC.
+
+           EXEC CICS HANDLE AID
+                PF4(100-FIRST-TIME)
+                PF9(999-EXIT)
+           END-EXEC.
+
+      * ATTEMPT TO RECEIVE MAP FROM TERMINAL
+           EXEC CICS RECEIVE
+                MAP('MAP1')
+                MAPSET('DCIA8MC')
+           END-EXEC.
+
+      * RECEIVE WAS SUCCESSFUL, PROCEED WITH MAIN PROCESSING
+           GO TO 200-MAIN-LOGIC.
+
+       100-FIRST-TIME.
+
+           MOVE LOW-VALUES TO MAP1O.
+
+           EXEC CICS SEND
+               MAP('MAP1')
+               MAPSET('DCIA8MC')
+               ERASE
+           END-EXEC.
+
+           EXEC CICS RETURN
+               TRANSID('IA82')
+           END-EXEC.
+
+       200-MAIN-LOGIC.
+
+      *    ALL THE INPUT
+           MOVE STU-NUMI  TO WS-STU-NUMBER.
+           MOVE STU-NAMEI TO WS-STU-NAME.
+           MOVE COURSE-1I TO WS-STU-COURSE-1.
+           MOVE COURSE-2I TO WS-STU-COURSE-2.
+           MOVE COURSE-3I TO WS-STU-COURSE-3.
+           MOVE COURSE-4I TO WS-STU-COURSE-4.
+           MOVE COURSE-5I TO WS-STU-COURSE-5.
+           MOVE ADDRSS-1I TO WS-STU-ADDRESS-1.
+           MOVE ADDRSS-2I TO WS-STU-ADDRESS-2.
+           MOVE ADDRSS-3I TO WS-STU-ADDRESS-3.
+           MOVE POSTAL-1I TO WS-STU-POSTAL-1.
+           MOVE POSTAL-2I TO WS-STU-POSTAL-2.
+           MOVE PHONE-1I  TO WS-STU-PHONE-1.
+           MOVE PHONE-2I  TO WS-STU-PHONE-2.
+           MOVE PHONE-3I  TO WS-STU-PHONE-3.
+
+      *    LENGTHS
+           MOVE STU-NUML  TO WS-STU-NUMBER-LEN.
+           MOVE STU-NAMEL TO WS-STU-NAME-LEN.
+           MOVE COURSE-1L TO WS-STU-COURSE-1-LEN.
+           MOVE COURSE-2L TO WS-STU-COURSE-2-LEN.
+           MOVE COURSE-3L TO WS-STU-COURSE-3-LEN.
+           MOVE COURSE-4L TO WS-STU-COURSE-4-LEN.
+           MOVE COURSE-5L TO WS-STU-COURSE-5-LEN.
+           MOVE ADDRSS-1L TO WS-STU-ADDRESS-1-LEN.
+           MOVE ADDRSS-2L TO WS-STU-ADDRESS-2-LEN.
+           MOVE ADDRSS-3L TO WS-STU-ADDRESS-3-LEN.
+           MOVE POSTAL-1L TO WS-STU-POSTAL-1-LEN.
+           MOVE POSTAL-2L TO WS-STU-POSTAL-2-LEN.
+           MOVE PHONE-1L  TO WS-STU-PHONE-1-LEN.
+           MOVE PHONE-2L  TO WS-STU-PHONE-2-LEN.
+           MOVE PHONE-3L  TO WS-STU-PHONE-3-LEN.
+
+
+           EXEC CICS LINK
+               PROGRAM('DCIA8PGE')
+               COMMAREA(WS-COMMAREA)
+               LENGTH(WS-COMMAREA-LEN)
+           END-EXEC.
+
+
+
+           IF (WS-STU-FIELD = 1)
+                MOVE -1 TO STU-NUML
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 320-COMMON-CICS
+           END-IF.
+
+           IF (WS-STU-FIELD = 2)
+                MOVE -1 TO STU-NAMEL
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 320-COMMON-CICS
+           END-IF.
+
+           IF (WS-STU-FIELD = 3)
+                MOVE -1 TO COURSE-1L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 320-COMMON-CICS
+           END-IF.
+
+           IF (WS-STU-FIELD = 4)
+                MOVE -1 TO COURSE-2L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 320-COMMON-CICS
+           END-IF.
+
+           IF (WS-STU-FIELD = 5)
+                MOVE -1 TO COURSE-3L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 320-COMMON-CICS
+           END-IF.
+
+           IF (WS-STU-FIELD = 6)
+                MOVE -1 TO COURSE-4L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 320-COMMON-CICS
+           END-IF.
+
+           IF (WS-STU-FIELD = 7)
+                MOVE -1 TO COURSE-5L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 320-COMMON-CICS
+           END-IF.
+
+           IF (WS-STU-FIELD = 8)
+                MOVE -1 TO ADDRSS-1L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 320-COMMON-CICS
+           END-IF.
+
+           IF (WS-STU-FIELD = 9)
+                MOVE -1 TO ADDRSS-2L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 320-COMMON-CICS
+           END-IF.
+
+           IF (WS-STU-FIELD = 10)
+                MOVE -1 TO POSTAL-1L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 320-COMMON-CICS
+           END-IF.
+
+           IF (WS-STU-FIELD = 11)
+                MOVE -1 TO PHONE-1L
+                MOVE WS-STU-ERRORS TO MSGO
+                GO TO 320-COMMON-CICS
+           END-IF.
+
+           IF (WS-STU-FIELD = 12)
+                GO TO 999-EXIT
+           END-IF.
+
+           IF (WS-STU-FIELD = 0)
+                MOVE WS-STU-NUMBER   TO STU-NUMBER
+                MOVE WS-STU-NAME     TO STU-NAME
+                MOVE WS-STU-COURSE-1 TO STU-COURSE-1
+                MOVE WS-STU-COURSE-2 TO STU-COURSE-2
+                MOVE WS-STU-COURSE-3 TO STU-COURSE-3
+                MOVE WS-STU-COURSE-4 TO STU-COURSE-4
+                MOVE WS-STU-COURSE-5 TO STU-COURSE-5
+
+                MOVE ADDRSS-1I TO STU-ADDRESS-1
+                MOVE ADDRSS-2I TO STU-ADDRESS-2
+                MOVE ADDRSS-3I TO STU-ADDRESS-3
+
+                MOVE POSTAL-1I TO STU-POSTAL-1
+                MOVE POSTAL-2I TO STU-POSTAL-2
+
+                MOVE WS-STU-PHONE-1 TO STU-PHONE-1
+                MOVE WS-STU-PHONE-2 TO STU-PHONE-2
+                MOVE WS-STU-PHONE-3 TO STU-PHONE-3
+
+                GO TO 250-WRITE
+           END-IF.
+
+       250-WRITE.
+           EXEC CICS WRITE
+                FILE('STUFILE')
+                FROM(STUFILE-RECORD)
+                RIDFLD(STU-KEY)
+           END-EXEC.
+
+
+           MOVE LOW-VALUES TO MAP1O.
+           MOVE "RECORD SUCCESSFULLY CREATED!" TO MSGO.
+
+           EXEC CICS SEND
+                MAP('MAP1')
+                MAPSET('DCIA8MC')
+                ERASE
+           END-EXEC.
+
+           EXEC CICS RETURN
+                TRANSID('IA82')
+           END-EXEC.
+
+       300-DUPREC.
+
+           MOVE LOW-VALUES TO MAP1O.
+           MOVE 'ACCOUNT ALREADY EXISTS. TRY DIFFERENT STUDENT NUMBER!!'
+           TO MSGO.
+
+           EXEC CICS SEND
+                MAP('MAP1')
+                MAPSET('DCIA8MC')
+      * NO "ERASE" IMPLEMENTED BECAUSE OF USER-FRIENDLY EXPERIENCE
+      * ERASE WILL CLEAR THE ENTIRE SCREEN FOR DUP-REC EVEN THOUGH
+      * ALL THE OTHER FIELDS ARE VALID.
+      * UNCOMMENT THE FOLLOWING LINE TO CLEAR ALL THE FIELDS WHEN
+      * TRYING TO ENTER THE DUPLICATE RECORD.
+      *         ERASE
+           END-EXEC.
+
+           EXEC CICS RETURN
+                TRANSID('IA82')
+           END-EXEC.
+
+       320-COMMON-CICS.
+           EXEC CICS SEND
+                MAP('MAP1')
+                MAPSET('DCIA8MC')
+                CURSOR
+           END-EXEC.
+
+           EXEC CICS RETURN
+                TRANSID('IA82')
+           END-EXEC.
+
+       999-EXIT.
+           EXEC CICS XCTL
+                PROGRAM('DCIA8PGM')
+                COMMAREA(WS-XCTL)
+                LENGTH(WS-XCTL-LEN)
+           END-EXEC.
+
+       END PROGRAM DCIA8PGC.
+
