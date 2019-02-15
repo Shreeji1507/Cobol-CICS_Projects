@@ -7,7 +7,6 @@
        DATA DIVISION.
        WORKING-STORAGE SECTION.
 
-
        COPY 'STUACCT'.
 
        LINKAGE SECTION.
@@ -15,7 +14,6 @@
        01 DFHCOMMAREA PIC X(303).
 
        PROCEDURE DIVISION.
-
 
            MOVE DFHCOMMAREA TO WS-COMMAREA.
 
@@ -30,13 +28,11 @@
                 GO TO 100-RETURN
            END-IF.
 
-
            IF (WS-STU-NUMBER-LEN = 0)
                 MOVE 'YOU MUST ENTER STUDENT NUMBER' TO WS-STU-ERRORS
                 MOVE 1 TO WS-STU-FIELD
                 GO TO 100-RETURN
            END-IF.
-
 
            IF (WS-STU-NUMBER-LEN > 0 AND WS-STU-NUMBER-LEN < 7)
                 MOVE 'STUDENT NUMBER MUST BE 7-DIGIT LONG NUMBER'
@@ -44,7 +40,6 @@
                 MOVE 1 TO WS-STU-FIELD
                 GO TO 100-RETURN
            END-IF.
-
 
            IF (WS-STU-NUMBER IS NOT NUMERIC)
                 MOVE 'STUDENT NUMBER MUST BE NUMERIC' TO WS-STU-ERRORS
@@ -98,7 +93,6 @@
                     GO TO 100-RETURN
                 END-IF
            END-IF.
-
 
            IF (WS-STU-COURSE-1-LEN > 0)
       *         MOVE WS-STU-COURSE-1 TO WS-STU-COURSE-1
@@ -284,8 +278,8 @@
                 GO TO 100-RETURN
            END-IF.
 
-           IF (WS-STU-PHONE-1 IS NOT NUMERIC AND WS-STU-PHONE-2 IS NOT
-               NUMERIC AND WS-STU-PHONE-3 IS NOT NUMERIC)
+           IF (WS-STU-PHONE-1 IS NOT NUMERIC OR WS-STU-PHONE-2 IS NOT
+               NUMERIC OR WS-STU-PHONE-3 IS NOT NUMERIC)
                 MOVE 'INVALID PHONE NUMBER, MUST BE NUMERIC!!'
                 TO WS-STU-ERRORS
                 MOVE 11 TO WS-STU-FIELD
