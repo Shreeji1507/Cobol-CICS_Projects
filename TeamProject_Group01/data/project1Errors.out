@@ -1,0 +1,46 @@
+
+                            ERRORS REPORT            18/04/24               11 00 38 45
+
+          ACTUAL RECORD                  TRANSACTION          TRANSACTION          PAYMENT             STORE                INVOICE           SKU-CODE
+                                            CODE                AMOUNT              TYPE               NUMBER               NUMBER
+          -------------                  -----------          -----------          -------             ------               -------           --------
+
+ S0000999CR01AS-0000A3WI8HRW8H43FJSHF                                                                                   INVALID INVOICE-NUM
+ R0002499CR02BS-000212                                                                                                                       EMPTY SKU-CODE
+ S000100XCW02XX-000001AADFSKJ84MS0913                      INVALID TRANS-AMOUNT  INVALID PAY-TYPE
+ S0008999CR02AS-0S0030WI8HRW8H43FJSHF                                                                                   INVALID INVOICE-NUM
+ X000099XCR02AS-000033WI8HRW8H43FJSHF  INVALID TRANS-CODE  INVALID TRANS-AMOUNT
+ R0012499CR02AS-000122                                                                                                                       EMPTY SKU-CODE
+ X0014999CR02AZ-000036247R20EHF02EF8E  INVALID TRANS-CODE
+ S0002999DW02AS-000037WI8HRW8H43FJSH2                                            INVALID PAY-TYPE
+ R0002499CR02AS-000212                                                                                                                       EMPTY SKU-CODE
+ S0002999DW02AS-000217WI8HRW8H43FJSHF                                            INVALID PAY-TYPE
+ X0012999DB02ZZ-000219247R20EHF02EF8E  INVALID TRANS-CODE
+ L0004999DB02A3-000224LFW8H88W84HFW4F                                                                                   INVALID INVOICE-NUM
+ S0002000CA02X3-000225SDFSKJ84MS09123                                                                                   INVALID INVOICE-NUM
+ L0014999DB12AD-000234LFW8H88W84HFW4F                                                              INVALID STORE-NUM
+ R0002999CW02XX-000335SDFSKJ84MS09123                                            INVALID PAY-TYPE
+ C0014999CR02AZ-000336247R20EHF02EF8E  INVALID TRANS-CODE
+ R0002499CR13AS-000402FLW8H4FW8H4FWF4                                                              INVALID STORE-NUM
+ S0001000CA13XX-000408SDFSKJ84MS09123                                                              INVALID STORE-NUM
+ R0002499CR03B3-000402FLW8H4FW8H4FWF4                                                                                   INVALID INVOICE-NUM
+ S0014999CR17BZ-000406247R20EHF02EF8E                                                              INVALID STORE-NUM
+ R0002999DB07BS-00S407WI8HRW8H43FJSHF                                                                                   INVALID INVOICE-NUM
+ S0001000CA07BX-00S508SDFSKJ84MS09123                                                                                   INVALID INVOICE-NUM
+ R0002499CR07BS-000512                                                                                                                       EMPTY SKU-CODE
+ S007100XCW07XX-000501AADFSKJ84MS0913                      INVALID TRANS-AMOUNT  INVALID PAY-TYPE
+ S000099XCR07AS-000633WI8HRW8H43FJSHF                      INVALID TRANS-AMOUNT
+ R0012499CR07AS-000722                                                                                                                       EMPTY SKU-CODE
+ X0014999CR07AZ-000636247R20EHF02EF8E  INVALID TRANS-CODE
+ S0002999DW07AS-000637WI8HRW8H43FJSH2                                            INVALID PAY-TYPE
+ R0002499CR07AS-000612                                                                                                                       EMPTY SKU-CODE
+ R0002400CA07XX-00S615SDFSKJ84MS09123                                                                                   INVALID INVOICE-NUM
+ S0002999DW07AS-000617WI8HRW8H43FJSHF                                            INVALID PAY-TYPE
+ W0012999DB07ZZ-000619247R20EHF02EF8E  INVALID TRANS-CODE
+ S0001000CA07X3-000631SDFSKJ84MS09123                                                                                   INVALID INVOICE-NUM
+ R0000499CR07AS-0N0622F4WO8JFO8W4JFW8                                                                                   INVALID INVOICE-NUM
+ R0002999CW07XX-000635SDFSKJ84MS09123                                            INVALID PAY-TYPE
+ X0014999CR07AZ-000636247R20EHF02EF8E  INVALID TRANS-CODE
+
+
+ Total Records = 152     Valid Records = 116     Invalid Records =  36

@@ -1,0 +1,6 @@
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\TeamProject_Group01\obj\Debug\TeamProject_Group01.cblprojResolveAssemblyReference.cache
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\TeamProject_Group01\obj\Debug\TeamProject_Group01.cblproj.CoreCompileInputs.cache
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\TeamProject_Group01\bin\Debug\TeamProject_Group01.exe
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\TeamProject_Group01\bin\Debug\TeamProject_Group01.pdb
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\TeamProject_Group01\obj\Debug\TeamProject_Group01.exe
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\TeamProject_Group01\obj\Debug\TeamProject_Group01.pdb

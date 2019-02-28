@@ -1,0 +1,6 @@
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program03_TypeSL_Processing\bin\Debug\Program03_TypeSL_Processing.exe
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program03_TypeSL_Processing\bin\Debug\Program03_TypeSL_Processing.pdb
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program03_TypeSL_Processing\obj\Debug\Program03_TypeSL_Processing.cblproj.CoreCompileInputs.cache
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program03_TypeSL_Processing\obj\Debug\Program03_TypeSL_Processing.exe
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program03_TypeSL_Processing\obj\Debug\Program03_TypeSL_Processing.pdb
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program03_TypeSL_Processing\obj\Debug\Program03_TypeSL_Processing.cblprojResolveAssemblyReference.cache

@@ -1,0 +1,6 @@
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program02_DataSplitCount\bin\Debug\Program02_DataSplitCount.exe
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program02_DataSplitCount\bin\Debug\Program02_DataSplitCount.pdb
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program02_DataSplitCount\obj\Debug\Program02_DataSplitCount.cblprojResolveAssemblyReference.cache
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program02_DataSplitCount\obj\Debug\Program02_DataSplitCount.cblproj.CoreCompileInputs.cache
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program02_DataSplitCount\obj\Debug\Program02_DataSplitCount.exe
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program02_DataSplitCount\obj\Debug\Program02_DataSplitCount.pdb

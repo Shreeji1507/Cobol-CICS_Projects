@@ -1,0 +1,6 @@
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program04_Type_R_Processing\bin\Debug\Program04_Type_R_Processing.exe
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program04_Type_R_Processing\bin\Debug\Program04_Type_R_Processing.pdb
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program04_Type_R_Processing\obj\Debug\Program04_Type_R_Processing.cblprojResolveAssemblyReference.cache
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program04_Type_R_Processing\obj\Debug\Program04_Type_R_Processing.cblproj.CoreCompileInputs.cache
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program04_Type_R_Processing\obj\Debug\Program04_Type_R_Processing.exe
+D:\Sem 4 DC\MAFD\TeamProject\TeamProject_Group01\Program04_Type_R_Processing\obj\Debug\Program04_Type_R_Processing.pdb
